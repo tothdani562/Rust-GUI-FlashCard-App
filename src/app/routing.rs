@@ -2,5 +2,6 @@
 pub enum Route {
     Dashboard,
     Decks,
+    Study,
     Settings,
 }

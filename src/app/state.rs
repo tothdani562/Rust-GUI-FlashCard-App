@@ -5,11 +5,14 @@ use eframe::egui;
 
 use crate::app::routing::Route;
 use crate::domain::input::{
-    DeckInput, DeckUpdateInput, FlashcardInput, FlashcardUpdateInput,
+    DeckInput, DeckUpdateInput, FlashcardInput, FlashcardUpdateInput, SessionStart,
+    SessionStartInput,
 };
-use crate::domain::{AppState, Deck, Flashcard};
+use crate::domain::{AppState, Deck, Flashcard, SessionSummary};
+use crate::services::validation::validate_deck_has_cards;
 use crate::services::JsonStorage;
 use crate::ui::{components, screens, theme};
+use crate::ui::screens::StudyAction;
 
 pub struct AppShell {
     pub route: Route,
@@ -40,6 +43,11 @@ pub struct AppShell {
     show_delete_card_confirm: bool,
     delete_card_deck_id: Option<String>,
     delete_card_id: Option<String>,
+    show_start_session_modal: bool,
+    start_session_deck_id: Option<String>,
+    start_session_shuffle: bool,
+    show_session_summary_modal: bool,
+    pending_session_summary: Option<SessionSummary>,
 }
 
 impl AppShell {
@@ -87,6 +95,11 @@ impl AppShell {
             show_delete_card_confirm: false,
             delete_card_deck_id: None,
             delete_card_id: None,
+            show_start_session_modal: false,
+            start_session_deck_id: None,
+            start_session_shuffle: false,
+            show_session_summary_modal: false,
+            pending_session_summary: None,
         }
     }
 
@@ -159,11 +172,93 @@ impl AppShell {
         self.show_edit_card_modal = true;
     }
 
+    fn open_start_session_modal(&mut self, deck_id: &str) {
+        self.start_session_deck_id = Some(deck_id.to_string());
+        self.start_session_shuffle = false;
+        self.show_start_session_modal = true;
+    }
+
+    fn start_session(&mut self, deck_id: &str, shuffle: bool) {
+        let start_input = SessionStartInput {
+            deck_id: deck_id.to_string(),
+            shuffle,
+        };
+
+        let conversion: Result<SessionStart, _> = start_input.try_into();
+        let start = match conversion {
+            Ok(valid) => valid,
+            Err(err) => {
+                self.status_message = Some(format!("Validacios hiba: {err}"));
+                return;
+            }
+        };
+
+        let Some(deck_idx) = self.app_state.decks.iter().position(|deck| deck.id == start.deck_id) else {
+            self.status_message = Some("A kijelolt deck nem talalhato.".to_string());
+            return;
+        };
+
+        if let Err(err) = validate_deck_has_cards(&self.app_state.decks[deck_idx]) {
+            self.status_message = Some(format!("Nem indithato session: {err}"));
+            return;
+        }
+
+        let deck_id_owned = self.app_state.decks[deck_idx].id.clone();
+        let card_count = self.app_state.decks[deck_idx].cards.len();
+        self.app_state
+            .session
+            .start_for_deck(deck_id_owned.clone(), card_count, start.shuffle);
+
+        self.route = Route::Study;
+        self.show_start_session_modal = false;
+        self.start_session_deck_id = Some(deck_id_owned);
+        self.save_state_with_message("Tanulasi session elinditva.");
+    }
+
+    fn finish_study_session(&mut self) {
+        let Some(summary) = self.app_state.session.build_summary() else {
+            self.status_message = Some("Nincs lezarhato session adat.".to_string());
+            return;
+        };
+
+        self.pending_session_summary = Some(summary.clone());
+        self.show_session_summary_modal = true;
+        self.app_state.archive_session(summary);
+        self.app_state.session = Default::default();
+        self.route = Route::Decks;
+        self.save_state_with_message("Session lezarva, osszegzes mentve.");
+    }
+
+    fn handle_study_action(&mut self, action: StudyAction) {
+        match action {
+            StudyAction::Flip => {
+                self.app_state.session.flip();
+            }
+            StudyAction::Next => {
+                self.app_state.session.next_card();
+            }
+            StudyAction::Grade(grade) => {
+                self.app_state.session.submit_grade(grade);
+                if self.app_state.session.is_complete() {
+                    self.finish_study_session();
+                    return;
+                }
+            }
+            StudyAction::End => {
+                self.app_state.session.ended_at = Some(Utc::now());
+                self.finish_study_session();
+                return;
+            }
+        }
+
+        self.save_state_with_message("Session allapot frissitve.");
+    }
+
     fn render_decks_screen(&mut self, ui: &mut egui::Ui) {
         self.ensure_selected_deck();
 
         ui.heading("Deckek es kartyak");
-        ui.label("Iteracio 1 CRUD: kereses, rendezes, deck/kartya muveletek");
+        ui.label("Iteracio 1-2: CRUD + tanulasi session inditas");
         ui.add_space(8.0);
 
         ui.horizontal(|ui| {
@@ -290,6 +385,14 @@ impl AppShell {
                     self.new_card_back.clear();
                     self.new_card_tags.clear();
                     self.show_new_card_modal = true;
+                }
+
+                let can_start_session = !self.app_state.decks[deck_idx].cards.is_empty();
+                if ui
+                    .add_enabled(can_start_session, egui::Button::new("Tanulas inditasa"))
+                    .clicked()
+                {
+                    self.open_start_session_modal(deck_id.as_str());
                 }
 
                 ui.add_space(8.0);
@@ -438,6 +541,45 @@ impl AppShell {
             edit_deck_open = false;
         }
         self.show_edit_deck_modal = edit_deck_open;
+
+        let mut start_session_open = self.show_start_session_modal;
+        let mut start_session_requested = false;
+        components::modal_frame(
+            ctx,
+            &mut start_session_open,
+            "Tanulasi session inditasa",
+            |ui| {
+                if let Some(deck_id) = &self.start_session_deck_id {
+                    let deck_name = self
+                        .app_state
+                        .decks
+                        .iter()
+                        .find(|deck| &deck.id == deck_id)
+                        .map(|deck| deck.name.clone())
+                        .unwrap_or_else(|| "Ismeretlen deck".to_string());
+
+                    ui.label(format!("Deck: {deck_name}"));
+                    ui.checkbox(&mut self.start_session_shuffle, "Shuffle kartya sorrend");
+                    ui.add_space(10.0);
+
+                    ui.horizontal(|ui| {
+                        if components::primary_button(ui, "Inditas").clicked() {
+                            start_session_requested = true;
+                        }
+                        if ui.button("Megse").clicked() {
+                            self.show_start_session_modal = false;
+                        }
+                    });
+                }
+            },
+        );
+        self.show_start_session_modal = start_session_open;
+
+        if start_session_requested {
+            if let Some(deck_id) = self.start_session_deck_id.clone() {
+                self.start_session(deck_id.as_str(), self.start_session_shuffle);
+            }
+        }
 
         let mut delete_deck_open = self.show_delete_deck_confirm;
         let mut should_delete_deck = false;
@@ -605,6 +747,24 @@ impl AppShell {
             self.delete_card_id = None;
             self.show_delete_card_confirm = false;
         }
+
+        let mut summary_open = self.show_session_summary_modal;
+        let mut close_summary = false;
+        components::modal_frame(ctx, &mut summary_open, "Session osszegzes", |ui| {
+            if let Some(summary) = &self.pending_session_summary {
+                components::session_summary_panel(ui, summary);
+                ui.add_space(10.0);
+                if components::primary_button(ui, "Bezárás").clicked() {
+                    close_summary = true;
+                }
+            }
+        });
+
+        if close_summary {
+            summary_open = false;
+            self.pending_session_summary = None;
+        }
+        self.show_session_summary_modal = summary_open;
     }
 
     fn nav_button(ui: &mut egui::Ui, is_active: bool, label: &str) -> egui::Response {
@@ -626,12 +786,34 @@ impl eframe::App for AppShell {
         let width = ctx.available_rect().width();
         theme::apply_theme(ctx, width);
 
+        if self.route == Route::Study && self.app_state.session.is_active() {
+            let keyboard_action = ctx.input(|input| {
+                if input.key_pressed(egui::Key::Space) {
+                    Some(StudyAction::Flip)
+                } else if input.key_pressed(egui::Key::ArrowRight) {
+                    Some(StudyAction::Next)
+                } else if input.key_pressed(egui::Key::Num1) {
+                    Some(StudyAction::Grade(crate::domain::Grade::Nehez))
+                } else if input.key_pressed(egui::Key::Num2) {
+                    Some(StudyAction::Grade(crate::domain::Grade::Kozepes))
+                } else if input.key_pressed(egui::Key::Num3) {
+                    Some(StudyAction::Grade(crate::domain::Grade::Konnyu))
+                } else {
+                    None
+                }
+            });
+
+            if let Some(action) = keyboard_action {
+                self.handle_study_action(action);
+            }
+        }
+
         egui::SidePanel::left("left_nav")
             .resizable(false)
             .exact_width(240.0)
             .show(ctx, |ui| {
                 ui.heading("Tanulokartya");
-                ui.label("Iteracio 1 CRUD");
+                ui.label("Iteracio 2 tanulasi mod");
                 ui.add_space(16.0);
 
                 if Self::nav_button(ui, self.route == Route::Dashboard, "Dashboard").clicked() {
@@ -639,6 +821,15 @@ impl eframe::App for AppShell {
                 }
                 if Self::nav_button(ui, self.route == Route::Decks, "Deckek").clicked() {
                     self.route = Route::Decks;
+                }
+                if Self::nav_button(ui, self.route == Route::Study, "Tanulas").clicked() {
+                    if self.app_state.session.is_active() {
+                        self.route = Route::Study;
+                    } else {
+                        self.status_message = Some(
+                            "Nincs aktiv session. Indits egyet a Deckek nezetbol.".to_string(),
+                        );
+                    }
                 }
                 if Self::nav_button(ui, self.route == Route::Settings, "Beallitasok").clicked() {
                     self.route = Route::Settings;
@@ -662,6 +853,51 @@ impl eframe::App for AppShell {
                 }
                 Route::Decks => {
                     self.render_decks_screen(ui);
+                }
+                Route::Study => {
+                    let deck_and_card = self
+                        .app_state
+                        .session
+                        .deck_id
+                        .as_ref()
+                        .and_then(|deck_id| {
+                            self.app_state
+                                .decks
+                                .iter()
+                                .find(|deck| &deck.id == deck_id)
+                                .and_then(|deck| {
+                                    self.app_state
+                                        .session
+                                        .current_card_index()
+                                        .and_then(|card_idx| {
+                                            deck.cards.get(card_idx).map(|card| {
+                                                (
+                                                    deck.name.clone(),
+                                                    card.front.clone(),
+                                                    card.back.clone(),
+                                                )
+                                            })
+                                        })
+                                })
+                        });
+
+                    if let Some((deck_name, card_front, card_back)) = deck_and_card {
+                        if let Some(action) = screens::study_screen(
+                            ui,
+                            &self.app_state,
+                            deck_name.as_str(),
+                            card_front.as_str(),
+                            card_back.as_str(),
+                        ) {
+                            self.handle_study_action(action);
+                        }
+                    } else {
+                        ui.heading("Tanulasi mod");
+                        ui.label("Nincs aktiv vagy ervenyes session.");
+                        if components::primary_button(ui, "Vissza a deckekhez").clicked() {
+                            self.route = Route::Decks;
+                        }
+                    }
                 }
                 Route::Settings => {
                     screens::settings_screen(ui, &self.app_state);

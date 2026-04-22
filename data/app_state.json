@@ -6,55 +6,120 @@
       "description": "Egy kis leírás ehhez.",
       "cards": [
         {
-          "id": "card-1776846540102",
-          "front": "asdasdasd",
-          "back": "asdasdasd",
-          "tags": [
-            "rust"
-          ],
-          "created_at": "2026-04-22T08:29:00.102317100Z",
-          "updated_at": "2026-04-22T08:29:00.102317100Z"
+          "id": "card-1776847467078",
+          "front": "Első",
+          "back": "Első",
+          "tags": [],
+          "created_at": "2026-04-22T08:44:27.078708600Z",
+          "updated_at": "2026-04-22T08:44:27.078708600Z"
         },
         {
-          "id": "card-1776846559807",
-          "front": "asdasd",
-          "back": "asdasd",
-          "tags": [
-            "asdasd"
-          ],
-          "created_at": "2026-04-22T08:29:19.807718Z",
-          "updated_at": "2026-04-22T08:29:19.807718Z"
+          "id": "card-1776847477765",
+          "front": "Második",
+          "back": "Második",
+          "tags": [],
+          "created_at": "2026-04-22T08:44:37.765329200Z",
+          "updated_at": "2026-04-22T08:44:37.765329200Z"
         },
         {
-          "id": "card-1776846563500",
-          "front": "asdasdasd",
-          "back": "asdasdasdasdasd",
-          "tags": [
-            "adasdasdasda"
-          ],
-          "created_at": "2026-04-22T08:29:23.500981Z",
-          "updated_at": "2026-04-22T08:29:23.500981Z"
+          "id": "card-1776847486008",
+          "front": "Harmadik",
+          "back": "Harmadik",
+          "tags": [],
+          "created_at": "2026-04-22T08:44:46.008003800Z",
+          "updated_at": "2026-04-22T08:44:46.008003800Z"
         },
         {
-          "id": "card-1776846568139",
-          "front": "asdasdasdadasdasdasdasda",
-          "back": "asdasdasdasdasdasdasdasd",
-          "tags": [
-            "asdasdasdas"
-          ],
-          "created_at": "2026-04-22T08:29:28.139739800Z",
-          "updated_at": "2026-04-22T08:29:28.139739800Z"
+          "id": "card-1776847493466",
+          "front": "Negyedik",
+          "back": "Negyedik",
+          "tags": [],
+          "created_at": "2026-04-22T08:44:53.466891700Z",
+          "updated_at": "2026-04-22T08:44:53.466891700Z"
         }
       ]
+    },
+    {
+      "id": "deck-1776847548351",
+      "name": "Java alapok",
+      "description": "Kis java alapok",
+      "cards": []
     }
   ],
   "active_deck": "deck-1776846321901",
   "session": {
     "deck_id": null,
+    "card_order": [],
     "current_index": 0,
     "show_back": false,
-    "last_grade": null
+    "last_grade": null,
+    "grades_by_card": [],
+    "shuffle": false,
+    "started_at": null,
+    "ended_at": null
   },
+  "session_history": [
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T08:43:10.849135600Z",
+      "ended_at": "2026-04-22T08:43:37.740165Z",
+      "duration_seconds": 26,
+      "total_cards": 4,
+      "graded_cards": 2,
+      "nehez_count": 0,
+      "kozepes_count": 0,
+      "konnyu_count": 2,
+      "shuffle": true
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T08:43:50.463822800Z",
+      "ended_at": "2026-04-22T08:44:10.071076600Z",
+      "duration_seconds": 19,
+      "total_cards": 4,
+      "graded_cards": 3,
+      "nehez_count": 0,
+      "kozepes_count": 2,
+      "konnyu_count": 1,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T08:44:56.875119800Z",
+      "ended_at": "2026-04-22T08:45:02.781173Z",
+      "duration_seconds": 5,
+      "total_cards": 4,
+      "graded_cards": 4,
+      "nehez_count": 1,
+      "kozepes_count": 2,
+      "konnyu_count": 1,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T08:45:19.166082200Z",
+      "ended_at": "2026-04-22T08:45:24.708111500Z",
+      "duration_seconds": 5,
+      "total_cards": 4,
+      "graded_cards": 4,
+      "nehez_count": 1,
+      "kozepes_count": 2,
+      "konnyu_count": 1,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T08:46:46.013177200Z",
+      "ended_at": "2026-04-22T08:46:56.226475700Z",
+      "duration_seconds": 10,
+      "total_cards": 4,
+      "graded_cards": 4,
+      "nehez_count": 0,
+      "kozepes_count": 2,
+      "konnyu_count": 2,
+      "shuffle": false
+    }
+  ],
   "settings": {
     "theme": "light",
     "language": "hu"

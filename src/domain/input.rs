@@ -88,3 +88,27 @@ impl TryFrom<DeckUpdateInput> for DeckUpdate {
         })
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct SessionStartInput {
+    pub deck_id: String,
+    pub shuffle: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct SessionStart {
+    pub deck_id: String,
+    pub shuffle: bool,
+}
+
+impl TryFrom<SessionStartInput> for SessionStart {
+    type Error = crate::services::validation::ValidationError;
+
+    fn try_from(value: SessionStartInput) -> Result<Self, Self::Error> {
+        let deck_id = require_non_empty("deck_id", value.deck_id)?;
+        Ok(SessionStart {
+            deck_id,
+            shuffle: value.shuffle,
+        })
+    }
+}

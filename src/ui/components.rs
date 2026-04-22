@@ -1,5 +1,7 @@
 use eframe::egui;
 
+use crate::domain::SessionSummary;
+
 pub fn primary_button(ui: &mut egui::Ui, label: &str) -> egui::Response {
     ui.add(
         egui::Button::new(label)
@@ -46,4 +48,31 @@ pub fn modal_frame(
                 add_contents(ui);
             });
     }
+}
+
+pub fn session_progress_bar(ui: &mut egui::Ui, graded: usize, total: usize) {
+    let progress = if total == 0 {
+        0.0
+    } else {
+        graded as f32 / total as f32
+    };
+
+    ui.add(
+        egui::ProgressBar::new(progress)
+            .show_percentage()
+            .text(format!("Haladas: {graded}/{total}")),
+    );
+}
+
+pub fn session_summary_panel(ui: &mut egui::Ui, summary: &SessionSummary) {
+    card_panel(ui, "Session osszegzes", |ui| {
+        ui.label(format!("Deck azonosito: {}", summary.deck_id));
+        ui.label(format!("Osszes kartya: {}", summary.total_cards));
+        ui.label(format!("Ertekelt kartya: {}", summary.graded_cards));
+        ui.label(format!("Nehez: {}", summary.nehez_count));
+        ui.label(format!("Kozepes: {}", summary.kozepes_count));
+        ui.label(format!("Konnyu: {}", summary.konnyu_count));
+        ui.label(format!("Idotartam: {} mp", summary.duration_seconds));
+        ui.label(format!("Shuffle: {}", if summary.shuffle { "igen" } else { "nem" }));
+    });
 }

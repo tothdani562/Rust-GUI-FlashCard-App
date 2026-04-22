@@ -7,6 +7,7 @@ pub mod session;
 pub use app_state::AppState;
 pub use deck::Deck;
 pub use flashcard::Flashcard;
+pub use session::{Grade, SessionSummary};
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
