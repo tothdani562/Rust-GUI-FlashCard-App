@@ -228,6 +228,14 @@ Atadhato, bemutathato projekt keszitese.
 - Uj gepen, friss klon utan reprodukalhato build/futtatas.
 - A modern kinezet es JSON mentes egyertelmuen igazolhato.
 
+### Megvalositas allapota (kesz)
+- Release build ellenorizve: `cargo build --release` sikeres.
+- Futtatas ellenorizve: `cargo run` indul.
+- README frissitve Iteracio 5 tartalommal (futtatas, funkciok, struktura, korlatok).
+- Gyors bemutato workflow leiras elerheto: `docs/demo-workflow.md`.
+- Demo adat frissitve: `data/app_state.json` 1 pelda paklival es 16 kartyaval.
+- Kepernyokep gyujtemenyhez konkret lista dokumentalva a README-ben.
+
 ---
 
 ## Munkaszervezesi ritmus (javaslat)

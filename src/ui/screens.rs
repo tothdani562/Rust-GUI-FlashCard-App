@@ -80,11 +80,23 @@ pub fn settings_screen(ui: &mut egui::Ui, app_state: &AppState) -> Option<Settin
         ui.horizontal(|ui| {
             let light_selected = app_state.settings.theme.eq_ignore_ascii_case("light");
             let dark_selected = app_state.settings.theme.eq_ignore_ascii_case("dark");
+            let normal_text = ui.visuals().widgets.noninteractive.fg_stroke.color;
 
-            if ui.selectable_label(light_selected, "Világos").clicked() {
+            let light_label = if light_selected {
+                egui::RichText::new("Világos").color(egui::Color32::WHITE)
+            } else {
+                egui::RichText::new("Világos").color(normal_text)
+            };
+            if ui.selectable_label(light_selected, light_label).clicked() {
                 action = Some(SettingsAction::SetTheme("light".to_string()));
             }
-            if ui.selectable_label(dark_selected, "Sötét").clicked() {
+
+            let dark_label = if dark_selected {
+                egui::RichText::new("Sötét").color(egui::Color32::WHITE)
+            } else {
+                egui::RichText::new("Sötét").color(normal_text)
+            };
+            if ui.selectable_label(dark_selected, dark_label).clicked() {
                 action = Some(SettingsAction::SetTheme("dark".to_string()));
             }
         });

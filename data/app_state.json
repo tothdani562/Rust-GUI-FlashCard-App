@@ -1,68 +1,179 @@
 {
   "decks": [
     {
-      "id": "deck-1776846321901",
+      "id": "deck-rust-alapok",
       "name": "Rust alapok",
-      "description": "Egy kis leírás ehhez.",
+      "description": "Demo pakli Iteracio 5 bemutatohoz.",
       "cards": [
         {
-          "id": "card-1776847467078",
-          "front": "Első",
-          "back": "Első",
-          "tags": [],
-          "created_at": "2026-04-22T08:44:27.078708600Z",
-          "updated_at": "2026-04-22T08:44:27.078708600Z"
-        },
-        {
-          "id": "card-1776847477765",
-          "front": "Második",
-          "back": "Második",
-          "tags": [],
-          "created_at": "2026-04-22T08:44:37.765329200Z",
-          "updated_at": "2026-04-22T08:44:37.765329200Z"
-        },
-        {
-          "id": "card-1776847486008",
-          "front": "Harmadik",
-          "back": "Harmadik",
-          "tags": [],
-          "created_at": "2026-04-22T08:44:46.008003800Z",
-          "updated_at": "2026-04-22T08:44:46.008003800Z"
-        },
-        {
-          "id": "card-1776847493466",
-          "front": "Negyedik",
-          "back": "Negyedik",
-          "tags": [],
-          "created_at": "2026-04-22T08:44:53.466891700Z",
-          "updated_at": "2026-04-22T08:44:53.466891700Z"
-        },
-        {
-          "id": "card-1776850716266",
-          "front": "adasdasd",
-          "back": "asdasdasd",
+          "id": "card-001",
+          "front": "Mi az ownership a Rustban?",
+          "back": "A memoriatulajdonlas egyedi, es megszabja ki felelos az eroforrasert.",
           "tags": [
-            "asdasda"
+            "memory",
+            "ownership"
           ],
-          "created_at": "2026-04-22T09:38:36.266897600Z",
-          "updated_at": "2026-04-22T09:38:36.266897600Z"
+          "created_at": "2026-04-22T09:00:00Z",
+          "updated_at": "2026-04-22T09:00:00Z"
+        },
+        {
+          "id": "card-002",
+          "front": "Mire jo a borrowing?",
+          "back": "Hozzaferest ad at tulajdonjog-atadas nelkul.",
+          "tags": [
+            "borrow",
+            "references"
+          ],
+          "created_at": "2026-04-22T09:01:00Z",
+          "updated_at": "2026-04-22T09:01:00Z"
+        },
+        {
+          "id": "card-003",
+          "front": "Mit jelent a mutable referencia?",
+          "back": "Valtoztathato hivatkozas; egyszerre csak egy lehet aktiv.",
+          "tags": [
+            "mutability"
+          ],
+          "created_at": "2026-04-22T09:02:00Z",
+          "updated_at": "2026-04-22T09:02:00Z"
+        },
+        {
+          "id": "card-004",
+          "front": "Mi az Option szerepe?",
+          "back": "A hianyzo erteket explicit modon kezeli.",
+          "tags": [
+            "enum",
+            "null-safety"
+          ],
+          "created_at": "2026-04-22T09:03:00Z",
+          "updated_at": "2026-04-22T09:03:00Z"
+        },
+        {
+          "id": "card-005",
+          "front": "Mi az Result szerepe?",
+          "back": "Sikeres es hibas vegkimenetet tipusosan ad vissza.",
+          "tags": [
+            "error-handling"
+          ],
+          "created_at": "2026-04-22T09:04:00Z",
+          "updated_at": "2026-04-22T09:04:00Z"
+        },
+        {
+          "id": "card-006",
+          "front": "Mikor hasznalunk TryFrom konverziot?",
+          "back": "Bemeneti adat validalt domain tipussa alakitashoz.",
+          "tags": [
+            "conversion",
+            "validation"
+          ],
+          "created_at": "2026-04-22T09:05:00Z",
+          "updated_at": "2026-04-22T09:05:00Z"
+        },
+        {
+          "id": "card-007",
+          "front": "Mit old meg az Arc?",
+          "back": "Megosztott, szalbiztos tulajdonlast ad referenciaszamlalassal.",
+          "tags": [
+            "shared-state"
+          ],
+          "created_at": "2026-04-22T09:06:00Z",
+          "updated_at": "2026-04-22T09:06:00Z"
+        },
+        {
+          "id": "card-008",
+          "front": "Mire jo a macro_rules!?",
+          "back": "Az ismetlodo boilerplate mintak kivaltasara.",
+          "tags": [
+            "macros"
+          ],
+          "created_at": "2026-04-22T09:07:00Z",
+          "updated_at": "2026-04-22T09:07:00Z"
+        },
+        {
+          "id": "card-009",
+          "front": "Mit csinal a serde derive?",
+          "back": "Automatikus Serialize es Deserialize implementaciot general.",
+          "tags": [
+            "serde",
+            "json"
+          ],
+          "created_at": "2026-04-22T09:08:00Z",
+          "updated_at": "2026-04-22T09:08:00Z"
+        },
+        {
+          "id": "card-010",
+          "front": "Miert fontos az atomikus mentes?",
+          "back": "Nem marad felkesz vagy korrupt allapotfajl hiba eseten sem.",
+          "tags": [
+            "persistence"
+          ],
+          "created_at": "2026-04-22T09:09:00Z",
+          "updated_at": "2026-04-22T09:09:00Z"
+        },
+        {
+          "id": "card-011",
+          "front": "Mire jo a shuffle?",
+          "back": "Valtozatos sorrendet ad a tanulasi sessionben.",
+          "tags": [
+            "study-mode"
+          ],
+          "created_at": "2026-04-22T09:10:00Z",
+          "updated_at": "2026-04-22T09:10:00Z"
+        },
+        {
+          "id": "card-012",
+          "front": "Mit mutat a progress bar?",
+          "back": "Az ertekelt es osszes kartya aranyat.",
+          "tags": [
+            "ux"
+          ],
+          "created_at": "2026-04-22T09:11:00Z",
+          "updated_at": "2026-04-22T09:11:00Z"
+        },
+        {
+          "id": "card-013",
+          "front": "Mi a JSON perzisztencia celja?",
+          "back": "Az allapot ujrainditas utan is megmaradjon.",
+          "tags": [
+            "storage"
+          ],
+          "created_at": "2026-04-22T09:12:00Z",
+          "updated_at": "2026-04-22T09:12:00Z"
+        },
+        {
+          "id": "card-014",
+          "front": "Mire jo a dashboard?",
+          "back": "Gyors attekintest ad a paklikrol es a sessionokrol.",
+          "tags": [
+            "dashboard"
+          ],
+          "created_at": "2026-04-22T09:13:00Z",
+          "updated_at": "2026-04-22T09:13:00Z"
+        },
+        {
+          "id": "card-015",
+          "front": "Mit jelent a manualis mentes?",
+          "back": "A felhasznalo egy gombbal azonnal mentheti az allapotot.",
+          "tags": [
+            "save"
+          ],
+          "created_at": "2026-04-22T09:14:00Z",
+          "updated_at": "2026-04-22T09:14:00Z"
+        },
+        {
+          "id": "card-016",
+          "front": "Mi a vegso beadando celja?",
+          "back": "Reprodukalhato, modern, bemutathato desktop projekt atadasa.",
+          "tags": [
+            "release"
+          ],
+          "created_at": "2026-04-22T09:15:00Z",
+          "updated_at": "2026-04-22T09:15:00Z"
         }
       ]
-    },
-    {
-      "id": "deck-1776847548351",
-      "name": "Java alapok",
-      "description": "Kis java alapok",
-      "cards": []
-    },
-    {
-      "id": "deck-1776850720982",
-      "name": "dasdasdas",
-      "description": "asdasdsa",
-      "cards": []
     }
   ],
-  "active_deck": "deck-1776846321901",
+  "active_deck": "deck-rust-alapok",
   "session": {
     "deck_id": null,
     "card_order": [],
@@ -76,196 +187,16 @@
   },
   "session_history": [
     {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T08:43:10.849135600Z",
-      "ended_at": "2026-04-22T08:43:37.740165Z",
-      "duration_seconds": 26,
-      "total_cards": 4,
-      "graded_cards": 2,
-      "nehez_count": 0,
-      "kozepes_count": 0,
-      "konnyu_count": 2,
+      "deck_id": "deck-rust-alapok",
+      "started_at": "2026-04-22T09:20:00Z",
+      "ended_at": "2026-04-22T09:27:00Z",
+      "duration_seconds": 420,
+      "total_cards": 16,
+      "graded_cards": 16,
+      "nehez_count": 3,
+      "kozepes_count": 7,
+      "konnyu_count": 6,
       "shuffle": true
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T08:43:50.463822800Z",
-      "ended_at": "2026-04-22T08:44:10.071076600Z",
-      "duration_seconds": 19,
-      "total_cards": 4,
-      "graded_cards": 3,
-      "nehez_count": 0,
-      "kozepes_count": 2,
-      "konnyu_count": 1,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T08:44:56.875119800Z",
-      "ended_at": "2026-04-22T08:45:02.781173Z",
-      "duration_seconds": 5,
-      "total_cards": 4,
-      "graded_cards": 4,
-      "nehez_count": 1,
-      "kozepes_count": 2,
-      "konnyu_count": 1,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T08:45:19.166082200Z",
-      "ended_at": "2026-04-22T08:45:24.708111500Z",
-      "duration_seconds": 5,
-      "total_cards": 4,
-      "graded_cards": 4,
-      "nehez_count": 1,
-      "kozepes_count": 2,
-      "konnyu_count": 1,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T08:46:46.013177200Z",
-      "ended_at": "2026-04-22T08:46:56.226475700Z",
-      "duration_seconds": 10,
-      "total_cards": 4,
-      "graded_cards": 4,
-      "nehez_count": 0,
-      "kozepes_count": 2,
-      "konnyu_count": 2,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T09:12:01.473875900Z",
-      "ended_at": "2026-04-22T09:12:05.465610800Z",
-      "duration_seconds": 3,
-      "total_cards": 4,
-      "graded_cards": 4,
-      "nehez_count": 0,
-      "kozepes_count": 2,
-      "konnyu_count": 2,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T09:20:13.112873800Z",
-      "ended_at": "2026-04-22T09:20:20.670968Z",
-      "duration_seconds": 7,
-      "total_cards": 4,
-      "graded_cards": 4,
-      "nehez_count": 1,
-      "kozepes_count": 2,
-      "konnyu_count": 1,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T09:20:25.896392600Z",
-      "ended_at": "2026-04-22T09:20:30.924870700Z",
-      "duration_seconds": 5,
-      "total_cards": 4,
-      "graded_cards": 4,
-      "nehez_count": 1,
-      "kozepes_count": 2,
-      "konnyu_count": 1,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T09:20:35.138819700Z",
-      "ended_at": "2026-04-22T09:20:51.630189500Z",
-      "duration_seconds": 16,
-      "total_cards": 4,
-      "graded_cards": 1,
-      "nehez_count": 0,
-      "kozepes_count": 1,
-      "konnyu_count": 0,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T09:22:08.645071400Z",
-      "ended_at": "2026-04-22T09:28:30.184982500Z",
-      "duration_seconds": 381,
-      "total_cards": 4,
-      "graded_cards": 4,
-      "nehez_count": 1,
-      "kozepes_count": 2,
-      "konnyu_count": 1,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T09:34:38.195018600Z",
-      "ended_at": "2026-04-22T09:34:47.208889300Z",
-      "duration_seconds": 9,
-      "total_cards": 4,
-      "graded_cards": 4,
-      "nehez_count": 1,
-      "kozepes_count": 2,
-      "konnyu_count": 1,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T09:38:59.959710900Z",
-      "ended_at": "2026-04-22T09:40:06.437853400Z",
-      "duration_seconds": 66,
-      "total_cards": 5,
-      "graded_cards": 2,
-      "nehez_count": 0,
-      "kozepes_count": 1,
-      "konnyu_count": 1,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T09:43:27.958364500Z",
-      "ended_at": "2026-04-22T09:43:44.789457600Z",
-      "duration_seconds": 16,
-      "total_cards": 5,
-      "graded_cards": 4,
-      "nehez_count": 0,
-      "kozepes_count": 2,
-      "konnyu_count": 2,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T09:43:58.060435400Z",
-      "ended_at": "2026-04-22T09:44:00.629597100Z",
-      "duration_seconds": 2,
-      "total_cards": 5,
-      "graded_cards": 5,
-      "nehez_count": 1,
-      "kozepes_count": 2,
-      "konnyu_count": 2,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T09:47:31.909939700Z",
-      "ended_at": "2026-04-22T09:47:36.995738700Z",
-      "duration_seconds": 5,
-      "total_cards": 5,
-      "graded_cards": 5,
-      "nehez_count": 1,
-      "kozepes_count": 2,
-      "konnyu_count": 2,
-      "shuffle": false
-    },
-    {
-      "deck_id": "deck-1776846321901",
-      "started_at": "2026-04-22T09:47:45.847608700Z",
-      "ended_at": "2026-04-22T09:47:49.608276Z",
-      "duration_seconds": 3,
-      "total_cards": 5,
-      "graded_cards": 4,
-      "nehez_count": 1,
-      "kozepes_count": 1,
-      "konnyu_count": 2,
-      "shuffle": false
     }
   ],
   "settings": {
