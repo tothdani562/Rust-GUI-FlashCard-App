@@ -26,7 +26,7 @@ pub fn require_non_empty(field_name: &str, value: String) -> Result<String, Vali
 pub fn validate_deck_has_cards(deck: &Deck) -> Result<(), ValidationError> {
     if deck.cards.is_empty() {
         return Err(validation_error!(
-            "A(z) '{}' deck nem tartalmaz kartyat.",
+            "A(z) '{}' pakli nem tartalmaz kartyat.",
             deck.name
         ));
     }

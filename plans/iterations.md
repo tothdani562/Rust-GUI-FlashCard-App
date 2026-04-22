@@ -151,10 +151,14 @@ A vizualis minoseg es hasznalhatosag felhozatala modern desktop app szintre.
 
 ### Feladatok
 1. Vizualis rendszer
-- Váltás világos és sötét téma között.
+- Váltás világos és sötét téma között a beállításokban.
+- A Dashboard résznél töltsd fel kártyákkal, hogy ne csak 1 kártya legyen, töltsd ki a teret, akár lehetne középre igazított hero section féleség is, ami kicsit leírja, hogy mégis mi ez az alkalmazás.
 - Kiforrott komponensstilusok: gombvariansok, input allapotok, kartya animaciok.
 - Tipografiai hierarchia (display, heading, body, caption).
 - Tudatos szinpaletta (primer, semleges, siker/figyelmeztetes/hiba).
+- Állapot mentése gomb lehetne csak egy floppy ikon, ha ráviszem az egeret, akkor tooltipbe írja, hogy "Állapot mentése".
+- A "Deck" szót mindenhol cseréljük le Paklira, a magyarosabb érzet kedvéért.
+- Az "Iteracio 2 tanulas mod" meg az "Iteracio 1-2: CRUD + tanulasi session inditas" szövegek helyett valami általánosabb leírás legyen az adott dologhoz.
 
 2. Mozgas es visszajelzes
 - Finom animaciok: kartya flip, modal nyitas, lista elemek beluszasa.

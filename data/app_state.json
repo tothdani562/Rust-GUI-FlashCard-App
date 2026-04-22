@@ -36,6 +36,16 @@
           "tags": [],
           "created_at": "2026-04-22T08:44:53.466891700Z",
           "updated_at": "2026-04-22T08:44:53.466891700Z"
+        },
+        {
+          "id": "card-1776850716266",
+          "front": "adasdasd",
+          "back": "asdasdasd",
+          "tags": [
+            "asdasda"
+          ],
+          "created_at": "2026-04-22T09:38:36.266897600Z",
+          "updated_at": "2026-04-22T09:38:36.266897600Z"
         }
       ]
     },
@@ -43,6 +53,12 @@
       "id": "deck-1776847548351",
       "name": "Java alapok",
       "description": "Kis java alapok",
+      "cards": []
+    },
+    {
+      "id": "deck-1776850720982",
+      "name": "dasdasdas",
+      "description": "asdasdsa",
       "cards": []
     }
   ],
@@ -116,6 +132,138 @@
       "graded_cards": 4,
       "nehez_count": 0,
       "kozepes_count": 2,
+      "konnyu_count": 2,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T09:12:01.473875900Z",
+      "ended_at": "2026-04-22T09:12:05.465610800Z",
+      "duration_seconds": 3,
+      "total_cards": 4,
+      "graded_cards": 4,
+      "nehez_count": 0,
+      "kozepes_count": 2,
+      "konnyu_count": 2,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T09:20:13.112873800Z",
+      "ended_at": "2026-04-22T09:20:20.670968Z",
+      "duration_seconds": 7,
+      "total_cards": 4,
+      "graded_cards": 4,
+      "nehez_count": 1,
+      "kozepes_count": 2,
+      "konnyu_count": 1,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T09:20:25.896392600Z",
+      "ended_at": "2026-04-22T09:20:30.924870700Z",
+      "duration_seconds": 5,
+      "total_cards": 4,
+      "graded_cards": 4,
+      "nehez_count": 1,
+      "kozepes_count": 2,
+      "konnyu_count": 1,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T09:20:35.138819700Z",
+      "ended_at": "2026-04-22T09:20:51.630189500Z",
+      "duration_seconds": 16,
+      "total_cards": 4,
+      "graded_cards": 1,
+      "nehez_count": 0,
+      "kozepes_count": 1,
+      "konnyu_count": 0,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T09:22:08.645071400Z",
+      "ended_at": "2026-04-22T09:28:30.184982500Z",
+      "duration_seconds": 381,
+      "total_cards": 4,
+      "graded_cards": 4,
+      "nehez_count": 1,
+      "kozepes_count": 2,
+      "konnyu_count": 1,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T09:34:38.195018600Z",
+      "ended_at": "2026-04-22T09:34:47.208889300Z",
+      "duration_seconds": 9,
+      "total_cards": 4,
+      "graded_cards": 4,
+      "nehez_count": 1,
+      "kozepes_count": 2,
+      "konnyu_count": 1,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T09:38:59.959710900Z",
+      "ended_at": "2026-04-22T09:40:06.437853400Z",
+      "duration_seconds": 66,
+      "total_cards": 5,
+      "graded_cards": 2,
+      "nehez_count": 0,
+      "kozepes_count": 1,
+      "konnyu_count": 1,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T09:43:27.958364500Z",
+      "ended_at": "2026-04-22T09:43:44.789457600Z",
+      "duration_seconds": 16,
+      "total_cards": 5,
+      "graded_cards": 4,
+      "nehez_count": 0,
+      "kozepes_count": 2,
+      "konnyu_count": 2,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T09:43:58.060435400Z",
+      "ended_at": "2026-04-22T09:44:00.629597100Z",
+      "duration_seconds": 2,
+      "total_cards": 5,
+      "graded_cards": 5,
+      "nehez_count": 1,
+      "kozepes_count": 2,
+      "konnyu_count": 2,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T09:47:31.909939700Z",
+      "ended_at": "2026-04-22T09:47:36.995738700Z",
+      "duration_seconds": 5,
+      "total_cards": 5,
+      "graded_cards": 5,
+      "nehez_count": 1,
+      "kozepes_count": 2,
+      "konnyu_count": 2,
+      "shuffle": false
+    },
+    {
+      "deck_id": "deck-1776846321901",
+      "started_at": "2026-04-22T09:47:45.847608700Z",
+      "ended_at": "2026-04-22T09:47:49.608276Z",
+      "duration_seconds": 3,
+      "total_cards": 5,
+      "graded_cards": 4,
+      "nehez_count": 1,
+      "kozepes_count": 1,
       "konnyu_count": 2,
       "shuffle": false
     }

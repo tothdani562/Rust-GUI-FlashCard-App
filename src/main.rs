@@ -9,12 +9,12 @@ fn main() -> eframe::Result<()> {
         viewport: eframe::egui::ViewportBuilder::default()
             .with_inner_size([1200.0, 760.0])
             .with_min_inner_size([900.0, 600.0])
-            .with_title("Tanulokartya - Iteracio 2"),
+            .with_title("Tanulókártya - Modern UI"),
         ..Default::default()
     };
 
     eframe::run_native(
-        "Tanulokartya",
+        "Tanulókártya",
         native_options,
         Box::new(|creation_ctx| Ok(Box::new(app::AppShell::new(creation_ctx)))),
     )

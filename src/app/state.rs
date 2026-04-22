@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 
 use chrono::Utc;
 use eframe::egui;
@@ -12,13 +13,22 @@ use crate::domain::{AppState, Deck, Flashcard, SessionSummary};
 use crate::services::validation::validate_deck_has_cards;
 use crate::services::JsonStorage;
 use crate::ui::{components, screens, theme};
-use crate::ui::screens::StudyAction;
+use crate::ui::screens::{SettingsAction, StudyAction};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum StatusKind {
+    Success,
+    Error,
+}
 
 pub struct AppShell {
     pub route: Route,
     pub app_state: AppState,
     storage: Arc<JsonStorage>,
     status_message: Option<String>,
+    status_kind: StatusKind,
+    toast_until: Option<Instant>,
+    loading_until: Option<Instant>,
     show_new_deck_modal: bool,
     new_deck_name: String,
     new_deck_description: String,
@@ -58,19 +68,22 @@ impl AppShell {
         let app_state = match storage.load_app_state() {
             Ok(state) => state,
             Err(err) => {
-                status_message = Some(format!("Betoltesi hiba, default allapot indult: {err}"));
+                status_message = Some(format!("Betöltési hiba, alapértelmezett állapot indult: {err}"));
                 AppState::default()
             }
         };
 
         // available_rect() itt meg nem hivhato biztonsagosan, mert az egui pass nem fut.
-        theme::apply_theme(&creation_ctx.egui_ctx, 1200.0);
+        theme::apply_theme(&creation_ctx.egui_ctx, 1200.0, &app_state.settings.theme);
 
         Self {
             route: Route::Dashboard,
             app_state,
             storage,
             status_message,
+            status_kind: StatusKind::Success,
+            toast_until: None,
+            loading_until: Some(Instant::now() + Duration::from_millis(900)),
             show_new_deck_modal: false,
             new_deck_name: String::new(),
             new_deck_description: String::new(),
@@ -103,10 +116,23 @@ impl AppShell {
         }
     }
 
+    fn set_success(&mut self, message: impl Into<String>) {
+        self.status_message = Some(message.into());
+        self.status_kind = StatusKind::Success;
+        self.toast_until = Some(Instant::now() + Duration::from_secs(4));
+    }
+
+    fn set_error(&mut self, message: impl Into<String>) {
+        self.status_message = Some(message.into());
+        self.status_kind = StatusKind::Error;
+        self.toast_until = Some(Instant::now() + Duration::from_secs(5));
+    }
+
     fn save_state_with_message(&mut self, success_message: &str) {
+        self.loading_until = Some(Instant::now() + Duration::from_millis(450));
         match self.storage.save_app_state(&self.app_state) {
-            Ok(()) => self.status_message = Some(success_message.to_string()),
-            Err(err) => self.status_message = Some(format!("Mentesi hiba: {err}")),
+            Ok(()) => self.set_success(success_message.to_string()),
+            Err(err) => self.set_error(format!("Mentesi hiba: {err}")),
         }
     }
 
@@ -188,18 +214,18 @@ impl AppShell {
         let start = match conversion {
             Ok(valid) => valid,
             Err(err) => {
-                self.status_message = Some(format!("Validacios hiba: {err}"));
+                self.status_message = Some(format!("Validációs hiba: {err}"));
                 return;
             }
         };
 
         let Some(deck_idx) = self.app_state.decks.iter().position(|deck| deck.id == start.deck_id) else {
-            self.status_message = Some("A kijelolt deck nem talalhato.".to_string());
+            self.status_message = Some("A kijelolt pakli nem talalhato.".to_string());
             return;
         };
 
         if let Err(err) = validate_deck_has_cards(&self.app_state.decks[deck_idx]) {
-            self.status_message = Some(format!("Nem indithato session: {err}"));
+            self.status_message = Some(format!("A tanulás nem indítható: {err}"));
             return;
         }
 
@@ -212,12 +238,12 @@ impl AppShell {
         self.route = Route::Study;
         self.show_start_session_modal = false;
         self.start_session_deck_id = Some(deck_id_owned);
-        self.save_state_with_message("Tanulasi session elinditva.");
+        self.save_state_with_message("Tanulás elindítva.");
     }
 
     fn finish_study_session(&mut self) {
         let Some(summary) = self.app_state.session.build_summary() else {
-            self.status_message = Some("Nincs lezarhato session adat.".to_string());
+            self.status_message = Some("Nincs lezárható tanulási adat.".to_string());
             return;
         };
 
@@ -226,7 +252,7 @@ impl AppShell {
         self.app_state.archive_session(summary);
         self.app_state.session = Default::default();
         self.route = Route::Decks;
-        self.save_state_with_message("Session lezarva, osszegzes mentve.");
+        self.save_state_with_message("Tanulás lezárva, összegzés mentve.");
     }
 
     fn handle_study_action(&mut self, action: StudyAction) {
@@ -251,24 +277,24 @@ impl AppShell {
             }
         }
 
-        self.save_state_with_message("Session allapot frissitve.");
+        self.save_state_with_message("Tanulási állapot frissítve.");
     }
 
     fn render_decks_screen(&mut self, ui: &mut egui::Ui) {
         self.ensure_selected_deck();
 
-        ui.heading("Deckek es kartyak");
-        ui.label("Iteracio 1-2: CRUD + tanulasi session inditas");
+        ui.heading("Paklik és kártyák");
+        ui.label("Paklikezelés, kártyaszerkesztés és tanulásindítás egy helyen.");
         ui.add_space(8.0);
 
         ui.horizontal(|ui| {
-            ui.label("Deck kereso:");
+            ui.label("Pakli kereső:");
             ui.add(
                 egui::TextEdit::singleline(&mut self.deck_search_query)
-                    .hint_text("Keress deck nevre")
+                    .hint_text("Keress pakli névre")
                     .desired_width(260.0),
             );
-            if ui.button("Kereso torlese").clicked() {
+            if ui.button("Kereső törlése").clicked() {
                 self.deck_search_query.clear();
             }
         });
@@ -297,11 +323,11 @@ impl AppShell {
 
         ui.columns(2, |columns| {
             columns[0].group(|ui| {
-                ui.strong("Deck lista");
+                ui.strong("Pakli lista");
                 ui.add_space(6.0);
 
                 if filtered_deck_ids.is_empty() {
-                    ui.label("Nincs a keresesre talalat.");
+                    ui.label("Nincs a keresésre találat.");
                 } else {
                     egui::ScrollArea::vertical()
                         .id_salt("deck_list_scroll")
@@ -315,7 +341,7 @@ impl AppShell {
                                 .iter()
                                 .find(|deck| &deck.id == deck_id)
                                 .map(|deck| deck.name.clone())
-                                .unwrap_or_else(|| "Ismeretlen deck".to_string());
+                                .unwrap_or_else(|| "Ismeretlen pakli".to_string());
 
                             let selected = self
                                 .selected_deck_id
@@ -323,7 +349,38 @@ impl AppShell {
                                 .is_some_and(|id| id == deck_id);
 
                             ui.push_id(deck_id, |ui| {
-                                if ui.selectable_label(selected, deck_name).clicked() {
+                                let size = egui::vec2(ui.available_width(), 32.0);
+                                let (rect, response) =
+                                    ui.allocate_exact_size(size, egui::Sense::click());
+
+                                let fill = if selected {
+                                    ui.visuals().selection.bg_fill
+                                } else if response.hovered() {
+                                    ui.visuals().widgets.hovered.bg_fill
+                                } else {
+                                    egui::Color32::TRANSPARENT
+                                };
+
+                                if fill != egui::Color32::TRANSPARENT {
+                                    ui.painter().rect_filled(rect, 4.0, fill);
+                                }
+
+                                let text_color = if selected {
+                                    egui::Color32::WHITE
+                                } else {
+                                    ui.visuals().widgets.noninteractive.fg_stroke.color
+                                };
+
+                                let font_id = egui::TextStyle::Button.resolve(ui.style());
+                                ui.painter().text(
+                                    egui::pos2(rect.left() + 12.0, rect.center().y),
+                                    egui::Align2::LEFT_CENTER,
+                                    deck_name,
+                                    font_id,
+                                    text_color,
+                                );
+
+                                if response.clicked() {
                                     self.selected_deck_id = Some(deck_id.clone());
                                     self.app_state.active_deck = self.selected_deck_id.clone();
                                 }
@@ -333,7 +390,7 @@ impl AppShell {
                 }
 
                 ui.add_space(10.0);
-                if components::primary_button(ui, "Uj deck").clicked() {
+                if components::primary_button(ui, "Új pakli").clicked() {
                     self.new_deck_name.clear();
                     self.new_deck_description.clear();
                     self.show_new_deck_modal = true;
@@ -341,7 +398,7 @@ impl AppShell {
 
                 let has_selection = self.selected_deck_index().is_some();
                 if ui
-                    .add_enabled(has_selection, egui::Button::new("Deck szerkesztese"))
+                    .add_enabled(has_selection, egui::Button::new("Pakli szerkesztése"))
                     .clicked()
                 {
                     self.open_edit_deck_modal();
@@ -350,7 +407,7 @@ impl AppShell {
                 if ui
                     .add_enabled(
                         has_selection,
-                        egui::Button::new("Deck torlese (megerosites)"),
+                        egui::Button::new("Pakli törlése (megerősítés)"),
                     )
                     .clicked()
                 {
@@ -360,11 +417,11 @@ impl AppShell {
             });
 
             columns[1].group(|ui| {
-                ui.strong("Kijelolt deck reszletei");
+                ui.strong("Kijelölt pakli részletei");
                 ui.add_space(6.0);
 
                 let Some(deck_idx) = self.selected_deck_index() else {
-                    ui.label("Nincs kijelolt deck.");
+                    ui.label("Nincs kijelölt pakli.");
                     return;
                 };
 
@@ -374,13 +431,13 @@ impl AppShell {
 
                 ui.heading(deck_name);
                 if deck_description.is_empty() {
-                    ui.label("Nincs leiras.");
+                    ui.label("Nincs leírás.");
                 } else {
                     ui.label(deck_description);
                 }
                 ui.add_space(8.0);
 
-                if components::primary_button(ui, "Uj kartya").clicked() {
+                if components::primary_button(ui, "Új kártya").clicked() {
                     self.new_card_front.clear();
                     self.new_card_back.clear();
                     self.new_card_tags.clear();
@@ -389,14 +446,14 @@ impl AppShell {
 
                 let can_start_session = !self.app_state.decks[deck_idx].cards.is_empty();
                 if ui
-                    .add_enabled(can_start_session, egui::Button::new("Tanulas inditasa"))
+                    .add_enabled(can_start_session, egui::Button::new("Tanulás indítása"))
                     .clicked()
                 {
                     self.open_start_session_modal(deck_id.as_str());
                 }
 
                 ui.add_space(8.0);
-                ui.label("Kartyak:");
+                ui.label("Kártyák:");
 
                 let card_rows: Vec<(String, String, String, usize)> = self.app_state.decks[deck_idx]
                     .cards
@@ -412,7 +469,7 @@ impl AppShell {
                     .collect();
 
                 if card_rows.is_empty() {
-                    ui.label("A deckben meg nincsenek kartyak.");
+                    ui.label("A pakliban még nincsenek kártyák.");
                 } else {
                     let mut edit_card_id: Option<String> = None;
                     let mut delete_card_id: Option<String> = None;
@@ -426,14 +483,14 @@ impl AppShell {
                             ui.push_id(card_id, |ui| {
                                 ui.group(|ui| {
                                     ui.strong(front);
-                                    ui.label(format!("Hatoldal: {back}"));
-                                    ui.label(format!("Tag-ek szama: {tags_count}"));
+                                    ui.label(format!("Hátoldal: {back}"));
+                                    ui.label(format!("Tag-ek száma: {tags_count}"));
 
                                     ui.horizontal(|ui| {
-                                        if ui.button("Szerkesztes").clicked() {
+                                        if ui.button("Szerkesztés").clicked() {
                                             edit_card_id = Some(card_id.clone());
                                         }
-                                        if ui.button("Torles").clicked() {
+                                        if ui.button("Törlés").clicked() {
                                             delete_card_id = Some(card_id.clone());
                                         }
                                     });
@@ -460,17 +517,17 @@ impl AppShell {
     fn render_modals(&mut self, ctx: &egui::Context) {
         let mut new_deck_open = self.show_new_deck_modal;
         let mut close_new_deck_modal = false;
-        components::modal_frame(ctx, &mut new_deck_open, "Uj deck letrehozasa", |ui| {
-            components::labeled_input(ui, "Deck neve", &mut self.new_deck_name, "Pl. Rust alapok");
+            components::modal_frame(ctx, &mut new_deck_open, "Új pakli létrehozása", |ui| {
+            components::labeled_input(ui, "Pakli neve", &mut self.new_deck_name, "Pl. Rust alapok");
             components::labeled_input(
                 ui,
-                "Leiras",
+                "Leírás",
                 &mut self.new_deck_description,
-                "Rovid leiras",
+                "Rövid leírás",
             );
 
             ui.add_space(12.0);
-            if components::primary_button(ui, "Hozzaadas").clicked() {
+            if components::primary_button(ui, "Hozzáadás").clicked() {
                 let input = DeckInput {
                     name: self.new_deck_name.clone(),
                     description: self.new_deck_description.clone(),
@@ -486,10 +543,10 @@ impl AppShell {
                         self.new_deck_name.clear();
                         self.new_deck_description.clear();
                         close_new_deck_modal = true;
-                        self.save_state_with_message(&format!("Deck letrehozva: {deck_name}"));
+                        self.save_state_with_message(&format!("Pakli létrehozva: {deck_name}"));
                     }
                     Err(err) => {
-                        self.status_message = Some(format!("Validacios hiba: {err}"));
+                        self.status_message = Some(format!("Validációs hiba: {err}"));
                     }
                 }
             }
@@ -501,17 +558,17 @@ impl AppShell {
 
         let mut edit_deck_open = self.show_edit_deck_modal;
         let mut close_edit_deck_modal = false;
-        components::modal_frame(ctx, &mut edit_deck_open, "Deck szerkesztese", |ui| {
-            components::labeled_input(ui, "Deck neve", &mut self.edit_deck_name, "Deck nev");
+        components::modal_frame(ctx, &mut edit_deck_open, "Pakli szerkesztése", |ui| {
+            components::labeled_input(ui, "Pakli neve", &mut self.edit_deck_name, "Pakli név");
             components::labeled_input(
                 ui,
-                "Leiras",
+                "Leírás",
                 &mut self.edit_deck_description,
-                "Rovid leiras",
+                "Rövid leírás",
             );
 
             ui.add_space(12.0);
-            if components::primary_button(ui, "Mentes").clicked() {
+            if components::primary_button(ui, "Mentés").clicked() {
                 let input = DeckUpdateInput {
                     name: self.edit_deck_name.clone(),
                     description: self.edit_deck_description.clone(),
@@ -527,12 +584,12 @@ impl AppShell {
                                 self.app_state.decks[deck_idx].name = update.name;
                                 self.app_state.decks[deck_idx].description = update.description;
                                 close_edit_deck_modal = true;
-                                self.save_state_with_message("Deck frissitve.");
+                                self.save_state_with_message("Pakli frissítve.");
                             }
                         }
                     }
                     Err(err) => {
-                        self.status_message = Some(format!("Validacios hiba: {err}"));
+                        self.status_message = Some(format!("Validációs hiba: {err}"));
                     }
                 }
             }
@@ -547,7 +604,7 @@ impl AppShell {
         components::modal_frame(
             ctx,
             &mut start_session_open,
-            "Tanulasi session inditasa",
+            "Tanulási indítás",
             |ui| {
                 if let Some(deck_id) = &self.start_session_deck_id {
                     let deck_name = self
@@ -556,17 +613,17 @@ impl AppShell {
                         .iter()
                         .find(|deck| &deck.id == deck_id)
                         .map(|deck| deck.name.clone())
-                        .unwrap_or_else(|| "Ismeretlen deck".to_string());
+                        .unwrap_or_else(|| "Ismeretlen pakli".to_string());
 
-                    ui.label(format!("Deck: {deck_name}"));
-                    ui.checkbox(&mut self.start_session_shuffle, "Shuffle kartya sorrend");
+                    ui.label(format!("Pakli: {deck_name}"));
+                    ui.checkbox(&mut self.start_session_shuffle, "Kártyasorrend keverése");
                     ui.add_space(10.0);
 
                     ui.horizontal(|ui| {
-                        if components::primary_button(ui, "Inditas").clicked() {
+                        if components::primary_button(ui, "Indítás").clicked() {
                             start_session_requested = true;
                         }
-                        if ui.button("Megse").clicked() {
+                        if ui.button("Mégse").clicked() {
                             self.show_start_session_modal = false;
                         }
                     });
@@ -583,14 +640,18 @@ impl AppShell {
 
         let mut delete_deck_open = self.show_delete_deck_confirm;
         let mut should_delete_deck = false;
-        components::modal_frame(ctx, &mut delete_deck_open, "Deck torlese", |ui| {
-            ui.label("Biztosan torolni szeretned a kijelolt decket es az osszes kartyajat?");
+        components::modal_frame(ctx, &mut delete_deck_open, "Pakli törlése", |ui| {
+            ui.label("Biztosan törölni szeretnéd a kijelölt paklit és az összes kártyáját?");
             ui.add_space(10.0);
             ui.horizontal(|ui| {
-                if components::primary_button(ui, "Igen, torles").clicked() {
+                if components::variant_button(ui, "Igen, törlés", components::ButtonVariant::Danger)
+                    .clicked()
+                {
                     should_delete_deck = true;
                 }
-                if ui.button("Megse").clicked() {
+                if components::variant_button(ui, "Mégse", components::ButtonVariant::Secondary)
+                    .clicked()
+                {
                     self.show_delete_deck_confirm = false;
                 }
             });
@@ -602,9 +663,9 @@ impl AppShell {
                 if let Some(deck_idx) = self.app_state.decks.iter().position(|deck| deck.id == deck_id)
                 {
                     let removed = self.app_state.decks.remove(deck_idx);
-                    self.status_message = Some(format!("Deck torolve: {}", removed.name));
+                    self.status_message = Some(format!("Pakli torolve: {}", removed.name));
                     self.ensure_selected_deck();
-                    self.save_state_with_message("Deck torolve es allapot mentve.");
+                    self.save_state_with_message("Pakli torolve es allapot mentve.");
                 }
             }
             self.delete_deck_id = None;
@@ -613,18 +674,18 @@ impl AppShell {
 
         let mut new_card_open = self.show_new_card_modal;
         let mut close_new_card_modal = false;
-        components::modal_frame(ctx, &mut new_card_open, "Uj kartya letrehozasa", |ui| {
-            components::labeled_input(ui, "Elooldal", &mut self.new_card_front, "Kerdes");
-            components::labeled_input(ui, "Hatoldal", &mut self.new_card_back, "Valasz");
+        components::modal_frame(ctx, &mut new_card_open, "Új kártya létrehozása", |ui| {
+            components::labeled_input(ui, "Előoldal", &mut self.new_card_front, "Kérdés");
+            components::labeled_input(ui, "Hátoldal", &mut self.new_card_back, "Válasz");
             components::labeled_input(
                 ui,
-                "Tag-ek (vesszovel)",
+                "Tag-ek (vesszővel)",
                 &mut self.new_card_tags,
                 "rust, ownership",
             );
 
             ui.add_space(12.0);
-            if components::primary_button(ui, "Kartya hozzaadasa").clicked() {
+            if components::primary_button(ui, "Kártya hozzáadása").clicked() {
                 let input = FlashcardInput {
                     front: self.new_card_front.clone(),
                     back: self.new_card_back.clone(),
@@ -640,11 +701,11 @@ impl AppShell {
                             self.new_card_back.clear();
                             self.new_card_tags.clear();
                             close_new_card_modal = true;
-                            self.save_state_with_message("Kartya letrehozva.");
+                            self.save_state_with_message("Kártya létrehozva.");
                         }
                     }
                     Err(err) => {
-                        self.status_message = Some(format!("Validacios hiba: {err}"));
+                        self.status_message = Some(format!("Validációs hiba: {err}"));
                     }
                 }
             }
@@ -656,18 +717,18 @@ impl AppShell {
 
         let mut edit_card_open = self.show_edit_card_modal;
         let mut close_edit_card_modal = false;
-        components::modal_frame(ctx, &mut edit_card_open, "Kartya szerkesztese", |ui| {
-            components::labeled_input(ui, "Elooldal", &mut self.edit_card_front, "Kerdes");
-            components::labeled_input(ui, "Hatoldal", &mut self.edit_card_back, "Valasz");
+        components::modal_frame(ctx, &mut edit_card_open, "Kártya szerkesztése", |ui| {
+            components::labeled_input(ui, "Előoldal", &mut self.edit_card_front, "Kérdés");
+            components::labeled_input(ui, "Hátoldal", &mut self.edit_card_back, "Válasz");
             components::labeled_input(
                 ui,
-                "Tag-ek (vesszovel)",
+                "Tag-ek (vesszővel)",
                 &mut self.edit_card_tags,
                 "rust, ownership",
             );
 
             ui.add_space(12.0);
-            if components::primary_button(ui, "Mentes").clicked() {
+            if components::primary_button(ui, "Mentés").clicked() {
                 let input = FlashcardUpdateInput {
                     front: self.edit_card_front.clone(),
                     back: self.edit_card_back.clone(),
@@ -694,13 +755,13 @@ impl AppShell {
                                     card.tags = update.tags;
                                     card.updated_at = Utc::now();
                                     close_edit_card_modal = true;
-                                    self.save_state_with_message("Kartya frissitve.");
+                                    self.save_state_with_message("Kártya frissítve.");
                                 }
                             }
                         }
                     }
                     Err(err) => {
-                        self.status_message = Some(format!("Validacios hiba: {err}"));
+                        self.status_message = Some(format!("Validációs hiba: {err}"));
                     }
                 }
             }
@@ -712,14 +773,18 @@ impl AppShell {
 
         let mut delete_card_open = self.show_delete_card_confirm;
         let mut should_delete_card = false;
-        components::modal_frame(ctx, &mut delete_card_open, "Kartya torlese", |ui| {
-            ui.label("Biztosan torolni szeretned a kijelolt kartyat?");
+        components::modal_frame(ctx, &mut delete_card_open, "Kártya törlése", |ui| {
+            ui.label("Biztosan törölni szeretnéd a kijelölt kártyát?");
             ui.add_space(10.0);
             ui.horizontal(|ui| {
-                if components::primary_button(ui, "Igen, torles").clicked() {
+                if components::variant_button(ui, "Igen, törlés", components::ButtonVariant::Danger)
+                    .clicked()
+                {
                     should_delete_card = true;
                 }
-                if ui.button("Megse").clicked() {
+                if components::variant_button(ui, "Mégse", components::ButtonVariant::Secondary)
+                    .clicked()
+                {
                     self.show_delete_card_confirm = false;
                 }
             });
@@ -738,7 +803,7 @@ impl AppShell {
                         .position(|card| card.id == card_id)
                     {
                         self.app_state.decks[deck_idx].cards.remove(card_idx);
-                        self.save_state_with_message("Kartya torolve es allapot mentve.");
+                        self.save_state_with_message("Kártya törölve és állapot mentve.");
                     }
                 }
             }
@@ -750,7 +815,7 @@ impl AppShell {
 
         let mut summary_open = self.show_session_summary_modal;
         let mut close_summary = false;
-        components::modal_frame(ctx, &mut summary_open, "Session osszegzes", |ui| {
+        components::modal_frame(ctx, &mut summary_open, "Tanulási összegzés", |ui| {
             if let Some(summary) = &self.pending_session_summary {
                 components::session_summary_panel(ui, summary);
                 ui.add_space(10.0);
@@ -774,9 +839,17 @@ impl AppShell {
             ui.visuals().widgets.inactive.bg_fill
         };
 
+        let text_color = if is_active {
+            egui::Color32::WHITE
+        } else if ui.visuals().dark_mode {
+            egui::Color32::from_gray(220)
+        } else {
+            egui::Color32::from_gray(64)
+        };
+
         ui.add_sized(
             [ui.available_width(), 36.0],
-            egui::Button::new(label).fill(fill),
+            egui::Button::new(egui::RichText::new(label).color(text_color)).fill(fill),
         )
     }
 }
@@ -784,11 +857,44 @@ impl AppShell {
 impl eframe::App for AppShell {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let width = ctx.available_rect().width();
-        theme::apply_theme(ctx, width);
+        theme::apply_theme(ctx, width, &self.app_state.settings.theme);
+
+        let global_action = ctx.input(|input| {
+            if input.modifiers.ctrl && input.key_pressed(egui::Key::S) {
+                Some("save")
+            } else if input.modifiers.ctrl && input.key_pressed(egui::Key::Num1) {
+                Some("route_dashboard")
+            } else if input.modifiers.ctrl && input.key_pressed(egui::Key::Num2) {
+                Some("route_decks")
+            } else if input.modifiers.ctrl && input.key_pressed(egui::Key::Num3) {
+                Some("route_study")
+            } else if input.modifiers.ctrl && input.key_pressed(egui::Key::Num4) {
+                Some("route_settings")
+            } else {
+                None
+            }
+        });
+
+        if let Some(action) = global_action {
+            match action {
+                "save" => self.save_state_with_message("Allapot mentve."),
+                "route_dashboard" => self.route = Route::Dashboard,
+                "route_decks" => self.route = Route::Decks,
+                "route_study" => {
+                    if self.app_state.session.is_active() {
+                        self.route = Route::Study;
+                    }
+                }
+                "route_settings" => self.route = Route::Settings,
+                _ => {}
+            }
+        }
 
         if self.route == Route::Study && self.app_state.session.is_active() {
             let keyboard_action = ctx.input(|input| {
                 if input.key_pressed(egui::Key::Space) {
+                    Some(StudyAction::Flip)
+                } else if input.key_pressed(egui::Key::ArrowLeft) {
                     Some(StudyAction::Flip)
                 } else if input.key_pressed(egui::Key::ArrowRight) {
                     Some(StudyAction::Next)
@@ -812,32 +918,55 @@ impl eframe::App for AppShell {
             .resizable(false)
             .exact_width(240.0)
             .show(ctx, |ui| {
-                ui.heading("Tanulokartya");
-                ui.label("Iteracio 2 tanulasi mod");
+                ui.add_space(10.0);
+                ui.vertical_centered(|ui| {
+                    ui.heading("Tanulókártya");
+                    ui.label("Modern tanulási alkalmazás");
+                    ui.label("Ctrl+1..4: nézetváltás");
+                    ui.label("Ctrl+S: mentés");
+                });
                 ui.add_space(16.0);
+
+                ui.vertical_centered(|ui| {
+                    let save_response = components::primary_button(ui, "💾");
+                    let save_response = save_response.on_hover_text("Állapot mentése");
+                    if save_response.clicked() {
+                        self.save_state_with_message("Állapot mentve.");
+                    }
+                });
+
+                ui.add_space(10.0);
 
                 if Self::nav_button(ui, self.route == Route::Dashboard, "Dashboard").clicked() {
                     self.route = Route::Dashboard;
                 }
-                if Self::nav_button(ui, self.route == Route::Decks, "Deckek").clicked() {
+                if Self::nav_button(ui, self.route == Route::Decks, "Paklik").clicked() {
                     self.route = Route::Decks;
                 }
-                if Self::nav_button(ui, self.route == Route::Study, "Tanulas").clicked() {
+                if Self::nav_button(ui, self.route == Route::Study, "Tanulás").clicked() {
                     if self.app_state.session.is_active() {
                         self.route = Route::Study;
                     } else {
                         self.status_message = Some(
-                            "Nincs aktiv session. Indits egyet a Deckek nezetbol.".to_string(),
+                            "Nincs aktív tanulás. Indíts egyet a Paklik nézetből.".to_string(),
                         );
                     }
                 }
-                if Self::nav_button(ui, self.route == Route::Settings, "Beallitasok").clicked() {
+                if Self::nav_button(ui, self.route == Route::Settings, "Beállítások").clicked() {
                     self.route = Route::Settings;
                 }
 
-                ui.add_space(16.0);
-                if components::primary_button(ui, "Allapot mentese").clicked() {
-                    self.save_state_with_message("Allapot mentve.");
+                if self.loading_until.is_some_and(|deadline| Instant::now() < deadline) {
+                    ui.add_space(10.0);
+                    ui.horizontal(|ui| {
+                        let palette = theme::palette(&self.app_state.settings.theme);
+                        ui.spinner();
+                        ui.label(
+                            egui::RichText::new("Betöltés/frissítés...")
+                                .size(11.5)
+                                .color(palette.warning),
+                        );
+                    });
                 }
             });
 
@@ -892,18 +1021,51 @@ impl eframe::App for AppShell {
                             self.handle_study_action(action);
                         }
                     } else {
-                        ui.heading("Tanulasi mod");
-                        ui.label("Nincs aktiv vagy ervenyes session.");
-                        if components::primary_button(ui, "Vissza a deckekhez").clicked() {
+                        ui.heading("Tanulási mód");
+                        ui.label("Nincs aktív vagy érvényes tanulás.");
+                        if components::primary_button(ui, "Vissza a paklikhoz").clicked() {
                             self.route = Route::Decks;
                         }
                     }
                 }
                 Route::Settings => {
-                    screens::settings_screen(ui, &self.app_state);
+                    if let Some(action) = screens::settings_screen(ui, &self.app_state) {
+                        match action {
+                            SettingsAction::SetTheme(theme_name) => {
+                                self.app_state.settings.theme = theme_name;
+                                self.save_state_with_message("Beállítások frissítve.");
+                            }
+                        }
+                    }
                 }
             }
         });
+
+        if let Some(until) = self.toast_until {
+            if Instant::now() < until {
+                let colors = theme::palette(&self.app_state.settings.theme);
+                let bg = if self.status_kind == StatusKind::Error {
+                    colors.error
+                } else {
+                    colors.success
+                };
+
+                egui::Area::new("status_toast".into())
+                    .anchor(egui::Align2::RIGHT_TOP, egui::vec2(-16.0, 16.0))
+                    .order(egui::Order::Foreground)
+                    .show(ctx, |ui| {
+                        egui::Frame::new()
+                            .fill(bg)
+                            .corner_radius(8.0)
+                            .inner_margin(egui::Margin::same(10))
+                            .show(ui, |ui| {
+                                if let Some(status) = &self.status_message {
+                                    ui.colored_label(egui::Color32::WHITE, status);
+                                }
+                            });
+                    });
+            }
+        }
 
         self.render_modals(ctx);
     }
