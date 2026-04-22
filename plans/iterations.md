@@ -151,6 +151,7 @@ A vizualis minoseg es hasznalhatosag felhozatala modern desktop app szintre.
 
 ### Feladatok
 1. Vizualis rendszer
+- Váltás világos és sötét téma között.
 - Kiforrott komponensstilusok: gombvariansok, input allapotok, kartya animaciok.
 - Tipografiai hierarchia (display, heading, body, caption).
 - Tudatos szinpaletta (primer, semleges, siker/figyelmeztetes/hiba).
