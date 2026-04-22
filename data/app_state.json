@@ -1,6 +1,60 @@
 {
-  "decks": [],
-  "active_deck": null,
+  "decks": [
+    {
+      "id": "deck-1776846321901",
+      "name": "Rust alapok",
+      "description": "Egy kis leírás ehhez.",
+      "cards": [
+        {
+          "id": "card-1776846540102",
+          "front": "asdasdasd",
+          "back": "asdasdasd",
+          "tags": [
+            "rust"
+          ],
+          "created_at": "2026-04-22T08:29:00.102317100Z",
+          "updated_at": "2026-04-22T08:29:00.102317100Z"
+        },
+        {
+          "id": "card-1776846559807",
+          "front": "asdasd",
+          "back": "asdasd",
+          "tags": [
+            "asdasd"
+          ],
+          "created_at": "2026-04-22T08:29:19.807718Z",
+          "updated_at": "2026-04-22T08:29:19.807718Z"
+        },
+        {
+          "id": "card-1776846563500",
+          "front": "asdasdasd",
+          "back": "asdasdasdasdasd",
+          "tags": [
+            "adasdasdasda"
+          ],
+          "created_at": "2026-04-22T08:29:23.500981Z",
+          "updated_at": "2026-04-22T08:29:23.500981Z"
+        },
+        {
+          "id": "card-1776846568139",
+          "front": "asdasdasdadasdasdasdasda",
+          "back": "asdasdasdasdasdasdasdasd",
+          "tags": [
+            "asdasdasdas"
+          ],
+          "created_at": "2026-04-22T08:29:28.139739800Z",
+          "updated_at": "2026-04-22T08:29:28.139739800Z"
+        }
+      ]
+    }
+  ],
+  "active_deck": "deck-1776846321901",
+  "session": {
+    "deck_id": null,
+    "current_index": 0,
+    "show_back": false,
+    "last_grade": null
+  },
   "settings": {
     "theme": "light",
     "language": "hu"

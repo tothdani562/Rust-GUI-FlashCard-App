@@ -1,6 +1,6 @@
-# Tanulokartya GUI - Iteracio 0
+# Tanulokartya GUI - Iteracio 1
 
-Ez a repository az Iteracio 0 kovetelmenyeit teljesito, fordithato desktop GUI skeleton.
+Ez a repository az Iteracio 1 kovetelmenyeit teljesito, fordithato desktop GUI alkalmazas.
 
 ## Technologia
 - Rust + eframe/egui desktop GUI
@@ -14,12 +14,14 @@ Ez a repository az Iteracio 0 kovetelmenyeit teljesito, fordithato desktop GUI s
 - `src/services`: validacio es JSON storage
 - `src/ui`: komponensek, kepernyok, tema
 
-## Iteracio 0 teljesules
-- GUI shell bal oldali navigacioval es dashboarddal
-- `data/app_state.json` automatikus letrehozas elso inditasnal
-- `load_app_state() -> Result<AppState>` es `save_app_state(&AppState) -> Result<()>`
-- legalabb egy sajat `macro_rules!` makro: `validation_error!`
-- `TryFrom` alap deck/kartya input konverzio
+## Iteracio 1 teljesules
+- Deck CRUD: letrehozas, szerkesztes, torles megerositessel
+- Deck lista: kereses + nev szerinti rendezes
+- Flashcard CRUD a kijelolt decken belul: letrehozas, szerkesztes, torles megerositessel
+- Minden CRUD muvelet utan automatikus JSON mentes
+- Tranzakcios mentes: temp fajl + atomikus csere
+- `TryFrom/TryInto` hasznalat input es update modellek validalt konverziojahoz
+- Sajat `macro_rules!` makro hasznalat validacios hibakhoz: `validation_error!`
 - `Arc<JsonStorage>` hasznalat a megosztott storage referenciara
 
 ## Futtatas

@@ -9,7 +9,7 @@ fn main() -> eframe::Result<()> {
         viewport: eframe::egui::ViewportBuilder::default()
             .with_inner_size([1200.0, 760.0])
             .with_min_inner_size([900.0, 600.0])
-            .with_title("Tanulokartya - Iteracio 0"),
+            .with_title("Tanulokartya - Iteracio 1"),
         ..Default::default()
     };
 
